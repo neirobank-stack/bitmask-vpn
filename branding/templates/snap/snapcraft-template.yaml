@@ -1,0 +1,239 @@
+name: ${binaryName}
+version: ${version}
+summary: ${applicationName}, secure VPN. Powered by Bitmask.
+description: |
+  ${applicationName} is an easy, fast, and secure VPN service from ${providerURL}.
+  ${applicationName} does not require a user account, keep logs, or track you in
+  any way. The service is paid for entirely by donations from users like you.
+grade: stable
+confinement: classic
+icon: snap/gui/icon.svg 
+base: core22
+compression: lzo
+
+architectures:
+  - build-on: amd64
+  - build-on: i386
+
+parts:
+  bitmask-root:
+    plugin: dump
+    source: pkg
+    source-type: local
+    override-prime: |
+      mkdir -p bin
+      cp $SNAPCRAFT_PART_SRC/pickle/helpers/bitmask-root bin/
+      chmod +x bin/bitmask-root
+
+  openvpn:
+    plugin: nil
+    stage-packages: [openvpn]
+    prime:
+      - -usr/share/doc
+      - -usr/share/man
+
+  bitmask-vpn:
+    plugin: nil
+    build-attributes:
+      - enable-patchelf
+    source: .
+    source-type: local
+    build-environment:
+      - QMAKE: qmake6
+    stage:
+        - bin/${binaryName}
+    override-build: |
+        # TODO - this still has some round corners for vendoring.
+        # Maybe we just need to put the providers.json in the VENDOR_PATH
+        # and pass it to gui/providers from some path that snap can access.
+        # Same for the vendor.qrc
+        update-alternatives --install /usr/bin/gofmt gofmt /usr/lib/go-1.21/bin/gofmt 0
+        update-alternatives --install /usr/bin/go go /usr/lib/go-1.21/bin/go 0
+        ln -s $(qmake6 -query "QT_INSTALL_BINS")/lrelease /usr/local/bin/lrelease
+        mkdir -p $SNAPCRAFT_PART_INSTALL/snap/
+        mkdir -p $SNAPCRAFT_PRIME/snap/
+        make vendor
+        make build
+        mkdir -p $SNAPCRAFT_PART_INSTALL/bin
+        mv build/qt/release/${binaryName} $SNAPCRAFT_PART_INSTALL/bin/
+    build-packages:
+      - pkg-config
+      - g++
+      - golang-1.21-go
+      - git
+      - make
+      - qt6-tools-dev-tools
+      - qt6-tools-dev
+      - qml-module-qtquick-controls2
+      - libqt6qml6
+      - libqt6svg6-dev
+      - qt6-l10n-tools
+      - qt6-base-dev
+      - qt6-base-dev-tools
+      - qt6-declarative-dev
+      - qt6-declarative-dev-tools
+      - libgl1-mesa-dev
+      - libqt6core5compat6-dev
+      - libglu1-mesa-dev
+      - libqt6opengl6-dev
+    stage-packages:
+      - qml6-module-qtquick
+      - qml6-module-qt5compat-graphicaleffects
+      - qml6-module-qtquick-controls
+      - qml6-module-qtquick-dialogs
+      - qml6-module-qtquick-layouts
+      - qml6-module-qtqml-workerscript
+      - qml6-module-qtquick-templates
+      - qml6-module-qtquick-window
+      - qml6-module-qt-labs-platform
+      - qml6-module-qtcore
+      - qt6-wayland
+      - libopengl0
+      - libqt6core6
+      - libqt6dbus6
+      - libqt6gui6
+      - libqt6network6
+      - libqt6qml6
+      - libqt6widgets6
+      - libb2-1
+      - libdouble-conversion3
+      - libgomp1
+      - libmd4c0
+      - libpcre2-16-0
+      - libproxy1v5
+      - libxkbcommon0
+  # gsettings, pixbuf and immodules are not needed by all snaps,
+  # but they are so common a requirement include them here
+  gsettings+pixbuf+immodules:
+    plugin: nil
+    build-packages:
+      - libgdk-pixbuf2.0-0
+      - librsvg2-common
+      - shared-mime-info
+      - libgtk-3-0
+    override-build: |
+      craftctl default
+      # Update mime database
+      update-mime-database ${CRAFT_PART_INSTALL}/usr/share/mime
+      # build immodules cache
+      mkdir -p ${CRAFT_PART_INSTALL}/usr/lib/${CRAFT_ARCH_TRIPLET}/gtk-3.0/3.0.0/
+      /usr/lib/${CRAFT_ARCH_TRIPLET}/libgtk-3-0/gtk-query-immodules-3.0 > ${CRAFT_PART_INSTALL}/usr/lib/${CRAFT_ARCH_TRIPLET}/gtk-3.0/3.0.0/immodules.cache
+    stage-packages:
+      - librsvg2-common
+      - gsettings-desktop-schemas
+      - libglib2.0-bin
+    override-prime: |
+      craftctl default
+      # Compile the gsettings schemas
+      /usr/lib/${CRAFT_ARCH_TRIPLET}/glib-2.0/glib-compile-schemas "$CRAFT_PRIME/usr/share/glib-2.0/schemas"
+      # Index the pixbuf loaders
+      LOADERS_PATH=$(echo ${CRAFT_PRIME}/usr/lib/${CRAFT_ARCH_TRIPLET}/gdk-pixbuf-2.0/*/loaders)
+      QUERY_LOADERS=/usr/lib/${CRAFT_ARCH_TRIPLET}/gdk-pixbuf-2.0/gdk-pixbuf-query-loaders
+      GDK_PIXBUF_MODULEDIR=${LOADERS_PATH} ${QUERY_LOADERS} > ${LOADERS_PATH}/../loaders.cache
+      sed s!$CRAFT_PRIME!!g --in-place ${LOADERS_PATH}/../loaders.cache
+  setup:
+    plugin: dump
+    source: https://github.com/canonical/iot-example-graphical-snap.git 
+    source-subdir: wayland-launch
+    override-build: |
+      # The plugs needed to run Wayland. (wayland-launch checks them, setup.sh connects them)
+      # You may add further plugs here if you want these options
+      PLUGS="opengl wayland graphics-core22"
+      sed --in-place "s/%PLUGS%/$PLUGS/g" $CRAFT_PART_BUILD/wayland-launch/bin/wayland-launch
+      sed --in-place "s/%PLUGS%/$PLUGS/g" $CRAFT_PART_BUILD/wayland-launch/bin/setup.sh
+      craftctl default
+    stage-packages:
+      - inotify-tools
+
+  graphics-core22:
+    after:
+      # Your application packaging
+      - gsettings+pixbuf+immodules
+      - setup
+      - bitmask-vpn
+    source: https://github.com/MirServer/graphics-core22.git
+    plugin: dump
+    override-prime: |
+      craftctl default
+      ${CRAFT_PART_SRC}/bin/graphics-core22-cleanup mesa-core22 nvidia-core22
+      cd "$CRAFT_PRIME/usr/share/"
+      rm -rf bug drirc.d glvnd libdrm lintian man
+      rm -rf applications apport bash-completion dbus-1 doc-base doc gtk-doc\
+             help pkgconfig libthai metainfo themes thumbnailers xml
+    prime:
+      - bin/graphics-core22-wrapper
+
+apps:
+  bitmask-root:
+    command: bin/bitmask-root
+
+  openvpn:
+    command: usr/sbin/openvpn
+
+  launcher:
+    command-chain: &_command-chain
+      - bin/graphics-core22-wrapper
+      - bin/wayland-launch
+    command: &_command bin/${binaryName}
+    plugs: &_plugs
+      - opengl
+      - wayland
+    environment: &_environment
+      # These environment variables are typically needed by Qt applications to ensue the snapped version of
+      # Qt components are found and used
+      QT_QPA_PLATFORM: wayland
+      QT_PLUGIN_PATH: ${SNAP}/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}/qt6/plugins/
+      QT_QPA_PLATFORM_PLUGIN_PATH: ${SNAP}/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}/qt6/plugins/platforms/
+      QML2_IMPORT_PATH: ${SNAP}/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}/qt6/qml
+  daemon:
+    daemon: simple
+    restart-delay: 3s
+    restart-condition: always
+    command-chain: *_command-chain
+    command: *_command
+    plugs: *_plugs
+    environment: *_environment
+# This is one of four snippets that relate to providing the userspace graphics needed by your application.
+# You can treat this as "magic" so long as you don't need to make changes.
+# On the Mir website there's a lot more detail on [the graphics-core22 Snap interface](https://mir-server.io/docs/the-graphics-core22-snap-interface) and it's use.
+plugs:
+  graphics-core22:
+    interface: content
+    target: $SNAP/graphics
+    default-provider: mesa-core22
+
+environment:
+  # Other, generally useful environment settings...
+  # XDG config
+  XDG_CACHE_HOME:  $SNAP_USER_COMMON/.cache
+  XDG_CONFIG_HOME: $SNAP_USER_DATA/.config
+  XDG_CONFIG_DIRS: $SNAP/etc/xdg
+  XDG_DATA_DIRS:   $SNAP/usr/local/share:$SNAP/usr/share
+  # XKB config
+  XKB_CONFIG_ROOT: $SNAP/usr/share/X11/xkb
+
+# The `layout` ensures that files can be found by applications where they are expected by the toolkit or application.
+layout:
+  /usr/share/libdrm:
+    bind: $SNAP/graphics/libdrm
+  /usr/share/drirc.d:
+    symlink: $SNAP/graphics/drirc.d
+  # Other, generally useful paths
+  /usr/share/fonts:
+    bind: $SNAP/usr/share/fonts
+  /usr/share/icons:
+    bind: $SNAP/usr/share/icons
+  /usr/share/sounds:
+    bind: $SNAP/usr/share/sounds
+  /etc/fonts:
+    bind: $SNAP/etc/fonts
+  # GTK
+  /usr/lib/$CRAFT_ARCH_TRIPLET/gdk-pixbuf-2.0:
+    bind: $SNAP/usr/lib/$CRAFT_ARCH_TRIPLET/gdk-pixbuf-2.0
+  /usr/lib/${CRAFT_ARCH_TRIPLET}/gtk-3.0:
+    bind: $SNAP/usr/lib/${CRAFT_ARCH_TRIPLET}/gtk-3.0
+  /usr/share/mime:
+    bind: $SNAP/usr/share/mime
+  /etc/gtk-3.0:
+    bind: $SNAP/etc/gtk-3.0
+

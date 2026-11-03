@@ -1,0 +1,139 @@
+---
+stages:
+  - lint
+  - build
+  - package
+
+build_test:
+  image: registry.0xacab.org/jkito/bitmask-vpn:latest
+  stage: build
+  script:
+    - make test
+    - patch -p1 < docker/*.patch
+    # TODO missing xcb package in the docker image. investigate what to install to run minimal tests.
+    # - make test_ui
+    - PROVIDER=bitmask && make vendor && make build
+  tags:
+    - linux
+  artifacts:
+    paths:
+      - 'build/qt/release'
+    expire_in: 1 week
+
+lint:
+  image: golangci/golangci-lint:latest-alpine
+  stage: build
+  script:
+    - golangci-lint run ./pkg/... ./cmd/...
+  tags:
+    - linux
+
+build_macos:
+  stage: build
+  script:
+    - export PROVIDERS=coopvpn,riseup
+    - export DEFAULT_PROVIDER=""
+    - make vendor
+    - make -j4 build
+    - make installer
+  tags:
+    - macos
+  artifacts:
+    paths:
+      - 'build/installer/*.app'
+    expire_in: 1 week
+
+build_Arch_Linux_package:
+  image: archlinux
+  stage: package
+  before_script:
+    - "pacman -Suy base-devel --noconfirm"
+    - "useradd non_root"
+    - "echo 'non_root ALL=NOPASSWD: ALL' >> /etc/sudoers"
+    - "mkdir -p /home/non_root/build"
+    - "cp -r . /home/non_root/build"
+    - "chown -R non_root:non_root /home/non_root"
+  script:
+    # makepkg does not run as root, but it needs sudo to install dependencies
+    - "cd /home/non_root/build && sudo -u non_root make package_arch"
+    - "cd /home/non_root/build && pacman -U ArchLinux/*tar.zst --noconfirm"
+    # artifacts must be relative to the working directory (e.g. /builds/leap/bitmask-vpn)
+    - "cp /home/non_root/build/ArchLinux/*.tar.zst $CI_PROJECT_DIR"
+  artifacts:
+    paths:
+      - '*.tar.zst'
+    expire_in: 1 week
+  tags:
+    - linux
+
+build_debian_package:
+  stage: package
+  image: debian:sid
+  before_script:
+    - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -q -y make sudo"
+    - "make depends"
+    - 'ln -s $(qmake6 -query "QT_INSTALL_BINS")/lrelease /usr/local/bin/lrelease'
+  script:
+    - "PROVIDER=bitmask make vendor"
+    - "PROVIDER=bitmask QMAKE=qmake6 make package_deb"
+    - "make clean"
+    - "PROVIDER=riseup make vendor"
+    - "PROVIDER=riseup QMAKE=qmake6 make package_deb"
+  after_script:
+    - "mv deploy/*.deb build/riseup/build"
+  artifacts:
+    paths:
+      - "build/riseup/build/"
+    expire_in: 1 week
+  tags:
+    - linux
+
+build_ubuntu22_package:
+  stage: package
+  image: ubuntu:22.04
+  before_script:
+    - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -q -y software-properties-common make sudo"
+    - "add-apt-repository ppa:longsleep/golang-backports -y"
+    - "DEBIAN_FRONTEND=noninteractive apt-get install -y -q golang-go"
+    - "make depends"
+    - 'ln -s $(qmake6 -query "QT_INSTALL_BINS")/lrelease /usr/local/bin/lrelease'
+  script:
+    - "PROVIDER=bitmask make vendor"
+    - "PROVIDER=bitmask QMAKE=qmake6 make package_deb"
+    - "make clean"
+    - "PROVIDER=riseup make vendor"
+    - "PROVIDER=riseup QMAKE=qmake6 make package_deb"
+  after_script:
+    - "mv deploy/*.deb build/riseup/build"
+  artifacts:
+    paths:
+      - "build/riseup/build/"
+    expire_in: 1 week
+  tags:
+    - linux
+
+build_ubuntu24_package:
+  stage: package
+  image: ubuntu:24.04
+  before_script:
+    - "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -q -y software-properties-common make sudo"
+    - "add-apt-repository ppa:longsleep/golang-backports -y"
+    - "DEBIAN_FRONTEND=noninteractive apt-get install -y -q golang-go"
+    - "make depends"
+    - 'ln -s $(qmake6 -query "QT_INSTALL_BINS")/lrelease /usr/local/bin/lrelease'
+  script:
+    - "PROVIDER=bitmask make vendor"
+    - "rm -rf build/bitmask/debian/patches"
+    - "PROVIDER=bitmask QMAKE=qmake6 make package_deb"
+    - "make clean"
+    - "PROVIDER=riseup make vendor"
+    - "rm -rf build/riseup/debian/patches"
+    - "PROVIDER=riseup QMAKE=qmake6 make package_deb"
+  after_script:
+    - "mv deploy/*.deb build/riseup/build"
+  artifacts:
+    paths:
+      - "build/riseup/build/"
+    expire_in: 1 week
+  tags:
+    - linux

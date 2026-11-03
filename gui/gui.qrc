@@ -1,0 +1,131 @@
+<RCC>
+    <qresource prefix="/">
+
+        <file>main.qml</file>
+        <file>qtquickcontrols2.conf</file>
+
+        <!-- gui components -->
+        <file>themes/themes.js</file>
+        <file>themes/theme-riseup.js</file>
+        <file>themes/Riseup.qml</file>
+        <file>themes/theme-calyx.js</file>
+        <file>themes/Calyx.qml</file>
+        <file>themes/Bitmask.qml</file>
+        <file>themes/ThemeObject.qml</file>
+
+        <file>components/MainView.qml</file>
+        <file>components/ThemedPage.qml</file>
+        <file>components/Splash.qml</file>
+        <file>components/FadeBehavior.qml</file>
+        <file>components/Home.qml</file>
+        <file>components/Header.qml</file>
+        <file>components/Footer.qml</file>
+        <file>components/About.qml</file>
+        <file>components/MaterialRadioButton.qml</file>
+        <file>components/MaterialRadioIndicator.qml</file>
+        <file>components/WrappedRadioButton.qml</file>
+        <file>components/MaterialCheckBox.qml</file>
+        <file>components/StatusBox.qml</file>
+        <file>components/Systray.qml</file>
+        <file>components/Help.qml</file>
+        <file>components/Locations.qml</file>
+        <file>components/SignalIcon.qml</file>
+        <file>components/Preferences.qml</file>
+        <file>components/BoldLabel.qml</file>
+        <file>components/LightLabel.qml</file>
+        <file>components/VPNButtonBase.qml</file>
+        <file>components/VPNMouseArea.qml</file>
+        <file>components/VerticalSpacer.qml</file>
+        <file>components/Icon.qml</file>
+        <file>components/VPNState.qml</file>
+        <file>components/InitErrors.qml</file>
+        <file>components/ErrorBox.qml</file>
+        <file>components/MotdBox.qml</file>
+        <file>components/ProviderSelection.qml</file>
+        <file>components/SelectCircumventionTechnique.qml</file>
+        <file>components/ConfiguringProvider.qml</file>
+        <file>components/ProviderSetupComplete.qml</file>
+        <file>components/SwitchProvider.qml</file>
+
+        <!-- resources, assets -->
+        <file>resources/icon-noshield.svg</file>
+        <file>resources/location.svg</file>
+        <file>resources/settings.svg</file>
+        <file>resources/power.svg</file>
+        <file>resources/language.svg</file>
+        <file>resources/lightning.svg</file>
+        <file>resources/close.svg</file>
+        <file>resources/donate.svg</file>
+        <file>resources/tools.svg</file>
+        <file>resources/help.svg</file>
+        <file>resources/about.svg</file>
+        <file>resources/bridge.svg</file>
+        <file>resources/gear-fill.svg</file>
+        <file>resources/reception-0.svg</file>
+        <file>resources/reception-2.svg</file>
+        <file>resources/reception-4.svg</file>
+        <file>resources/reception-0@24.svg</file>
+        <file>resources/reception-4@24.svg</file>
+        <file>resources/arrow-left.svg</file>
+        <file>resources/globe.svg</file>
+        <file>resources/spy.gif</file>
+        <file>resources/quit.svg</file>
+        <file>resources/alert.svg</file>
+        <file>resources/angle-right.svg</file>
+        <file>resources/snowflake.svg</file>
+        <file>resources/button_green.png</file>
+        <file>resources/button_yellow.png</file>
+        <file>resources/button_red.png</file>
+        <file>resources/setup_progress_image.png</file>
+        <file>resources/switch_provider.svg</file>
+
+        <!-- riseup assets -->
+        <file>resources/ravens.svg</file>
+        <file>resources/ravens.gif</file>
+        <file>resources/riseup-icon.svg</file>
+        <file>resources/riseup_connected_bg.png</file>
+        <file>resources/riseup_connecting_bg.png</file>
+        <file>resources/riseup_disconnected_bg.png</file>
+        <file>resources/riseup_green_shield.svg</file>
+
+        <!-- calyx assets -->
+        <file>resources/calyx/calyx-shield-green.png</file>
+        <file>resources/calyx/calyx-hand.png</file>
+        <file>resources/calyx/calyx-red-shield.png</file>
+        <file>resources/calyx/calyx-yellow-shield.png</file>
+
+        <!-- bitmask assets -->
+        <file>resources/bitmask/splash_logo.png</file>
+        <file>resources/bitmask/state_connected.png</file>
+        <file>resources/bitmask/state_connecting.png</file>
+        <file>resources/bitmask/state_disconnected.png</file>
+        <file>resources/bitmask/bitmask_connected_bg.png</file>
+        <file>resources/bitmask/bitmask_connecting_bg.png</file>
+        <file>resources/bitmask/bitmask_disconnected_bg.png</file>
+
+       <!-- fonts -->
+        <file alias="poppins-regular.ttf">resources/fonts/Poppins-Regular.ttf</file>
+        <file alias="poppins-bold.ttf">resources/fonts/Poppins-Bold.ttf</file>
+        <file alias="monserrat-bold.ttf">resources/fonts/Montserrat-SemiBold.ttf</file>
+        <file alias="roboto.ttf">resources/fonts/Roboto-Regular.ttf</file>
+        <file alias="roboto-bold.ttf">resources/fonts/Roboto-Bold.ttf</file>
+
+        <!-- systray icons -->
+        <file>assets/icon/png/black/vpn_off.png</file>
+        <file>assets/icon/png/black/vpn_on.png</file>
+        <file>assets/icon/png/black/vpn_wait_0.png</file>
+        <file>assets/icon/png/black/vpn_wait_1.png</file>
+        <file>assets/icon/png/black/vpn_wait_2.png</file>
+        <file>assets/icon/png/black/vpn_wait_3.png</file>
+
+        <file>assets/icon/png/white/vpn_off.png</file>
+        <file>assets/icon/png/white/vpn_on.png</file>
+        <file>assets/icon/png/white/vpn_wait_0.png</file>
+        <file>assets/icon/png/white/vpn_wait_1.png</file>
+        <file>assets/icon/png/white/vpn_wait_2.png</file>
+        <file>assets/icon/png/white/vpn_wait_3.png</file>
+        <file>assets/img/bird.jpg</file>
+
+        <file alias="providers.json">providers/providers.json</file>
+    </qresource>
+</RCC>

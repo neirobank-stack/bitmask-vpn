@@ -1,0 +1,68 @@
+name: 'Bitmask macOS (unsigned)'
+
+# Порт build-mac из upstream .github/workflows/nightly.yaml (leapcode/bitmask-vpn @ 99585a3).
+# Изменено: PROVIDER=bitmask; Go из go.mod (upstream закреплял 1.22, go.mod требует 1.26.10);
+# раннер Intel (MacBook Founder — x86_64); результат публикуется в GitHub Release.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-mac:
+    runs-on: macos-15-intel
+    env:
+      PROVIDER: bitmask
+      VERSION: 0.26.10-rc.1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Golang from go.mod
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - run: go version && uname -m && sw_vers
+      - name: Install build dependencies from brew
+        run: brew install make create-dmg
+      - name: Install aqt installer
+        run: pipx install aqtinstall
+      - name: Setup Qt6 using aqt
+        run: aqt install-qt mac desktop 6.6.2 clang_64 -O ~/Qt6
+      - name: Install Qt installer framework
+        run: >
+          cd /tmp &&
+          curl -LO https://download.qt.io/official_releases/qt-installer-framework/4.7.0/QtInstallerFramework-macOS-x64-4.7.0.dmg &&
+          hdiutil attach QtInstallerFramework-macOS-x64-4.7.0.dmg &&
+          cd /Volumes/QtInstallerFramework-macOS-x64-4.7.0/QtInstallerFramework-macOS-x64-4.7.0.app/Contents/MacOS &&
+          ./QtInstallerFramework-macOS-x64-4.7.0 in --da -c --al
+      - name: Build macOS installer
+        run: |
+          export PATH=~/Qt6/6.6.2/macos/bin:~/Qt/QtIFW-4.7.0/bin:$PATH
+          make vendor
+          make build
+          make installer
+      - name: Pack results
+        run: |
+          mkdir -p out
+          ls -la build/installer build/qt/release || true
+          for a in build/installer/*.app build/qt/release/*.app; do
+            [ -d "$a" ] && ditto -ck --rsrc --sequesterRsrc --keepParent "$a" "out/$(basename "$a" .app)-macos-x86_64.zip"
+          done
+          ls -la out
+          shasum -a 256 out/* | tee out/SHA256SUMS.txt
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="bitmask-${VERSION}-${GITHUB_RUN_NUMBER}"
+          gh release create "$TAG" out/* --title "Bitmask ${VERSION} macOS x86_64 (unsigned) #${GITHUB_RUN_NUMBER}" --notes "Unsigned build of leapcode/bitmask-vpn 99585a3, PROVIDER=bitmask."
+      - name: Upload artifacts (fallback)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bitmask-macos-${{ github.sha }}
+          path: out/

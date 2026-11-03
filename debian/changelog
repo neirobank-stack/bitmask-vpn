@@ -1,0 +1,11 @@
+riseup-vpn (0.21.11) hirsute; urgency=medium
+
+  * Release 0.21.11
+
+ -- Kali Kaneko (leap communications) <kali@leap.se>  Tue, 22 Jun 2021 18:26:53 +0200
+
+riseup-vpn (0.21.2.6) groovy; urgency=medium
+
+  * Initial Release.
+
+ -- kali kaneko (leap communications) <kali@leap.se>  Tue, 09 Feb 2021 20:26:52 +0100

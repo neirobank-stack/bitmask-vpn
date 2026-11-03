@@ -1,0 +1,324 @@
+From 3ddb761779f00933d6b49d141f9b3c336850590b Mon Sep 17 00:00:00 2001
+From: jkito <belter@riseup.net>
+Date: Sat, 29 Aug 2026 23:25:11 +0530
+Subject: [PATCH] build: fix build on ubuntu22 and 23 with qt6.4
+
+---
+ bitmask.pro                                   |  2 +-
+ gui/components/ConfiguringProvider.qml        |  2 --
+ gui/components/ErrorBox.qml                   |  2 +-
+ gui/components/Footer.qml                     | 14 ++++------
+ gui/components/Home.qml                       |  2 +-
+ gui/components/InitErrors.qml                 |  2 +-
+ gui/components/Locations.qml                  |  7 ++---
+ gui/components/MotdBox.qml                    |  2 +-
+ gui/components/Preferences.qml                |  2 +-
+ gui/components/ProviderSelection.qml          |  2 --
+ gui/components/ProviderSetupComplete.qml      |  2 --
+ .../SelectCircumventionTechnique.qml          |  2 --
+ gui/components/SignalIcon.qml                 |  7 ++---
+ gui/components/Splash.qml                     |  2 +-
+ gui/components/StatusBox.qml                  |  2 +-
+ gui/components/SwitchProvider.qml             | 28 ++++++++-----------
+ 16 files changed, 31 insertions(+), 49 deletions(-)
+
+diff --git a/bitmask.pro b/bitmask.pro
+index e9041d5d..78232479 100644
+--- a/bitmask.pro
++++ b/bitmask.pro
+@@ -1,8 +1,8 @@
+ TARGET = $$TARGET
+ 
+ QT += quickcontrols2 svg
+-CONFIG += qt staticlib
+ CONFIG += c++17 strict_c++
++CONFIG += qt staticlib core5compat
+ CONFIG += qtquickcompiler
+ 
+ RELEASE = $$RELEASE
+diff --git a/gui/components/ConfiguringProvider.qml b/gui/components/ConfiguringProvider.qml
+index c5172410..3ac7d038 100644
+--- a/gui/components/ConfiguringProvider.qml
++++ b/gui/components/ConfiguringProvider.qml
+@@ -1,5 +1,3 @@
+-pragma ComponentBehavior: Bound
+-
+ import QtQuick
+ import QtQuick.Controls
+ import QtQuick.Controls.Material
+diff --git a/gui/components/ErrorBox.qml b/gui/components/ErrorBox.qml
+index 5667ed9d..ef8f58fb 100644
+--- a/gui/components/ErrorBox.qml
++++ b/gui/components/ErrorBox.qml
+@@ -1,6 +1,6 @@
+ import QtQuick
+ import QtQuick.Controls
+-import QtQuick.Effects
++import Qt5Compat.GraphicalEffects
+ import "../themes/themes.js" as Theme
+ 
+ Item {
+diff --git a/gui/components/Footer.qml b/gui/components/Footer.qml
+index 9b192fe4..8a2ce60b 100644
+--- a/gui/components/Footer.qml
++++ b/gui/components/Footer.qml
+@@ -2,7 +2,7 @@ import QtQuick
+ import QtQuick.Controls
+ import QtQuick.Controls.Material
+ import QtQuick.Layouts
+-import QtQuick.Effects
++import Qt5Compat.GraphicalEffects
+ import "../themes/themes.js" as Theme
+ 
+ ToolBar {
+@@ -49,7 +49,7 @@ ToolBar {
+         }
+ 
+         Image {
+-            id: lightning
++            id: lightning 
+             smooth: true
+             visible: ctx != undefined & root.selectedGateway == "auto"
+             width: 16
+@@ -61,11 +61,10 @@ ToolBar {
+                 verticalCenter: gwButton.verticalCenter
+             }
+         }
+-        MultiEffect {
++        ColorOverlay{
+             anchors.fill: lightning
+             source: lightning
+-            colorizationColor: getLocationColor()
+-            colorization: 1.0
++            color: getLocationColor()
+             antialiasing: true
+         }
+ 
+@@ -123,11 +122,10 @@ ToolBar {
+                 rightMargin: 20
+             }
+         }
+-        MultiEffect {
++        ColorOverlay{
+             anchors.fill: gwQuality
+             source: gwQuality
+-            colorizationColor: getSignalColor()
+-            colorization: 1.0
++            color: getSignalColor()
+             antialiasing: false
+         }
+     }
+diff --git a/gui/components/Home.qml b/gui/components/Home.qml
+index 7dc7a928..18a58aad 100644
+--- a/gui/components/Home.qml
++++ b/gui/components/Home.qml
+@@ -1,6 +1,6 @@
+ import QtQuick
+ import QtQuick.Controls
+-import QtQuick.Effects
++import Qt5Compat.GraphicalEffects
+ 
+ Page {
+     StatusBox {
+diff --git a/gui/components/InitErrors.qml b/gui/components/InitErrors.qml
+index 0481cae3..b14ac98a 100644
+--- a/gui/components/InitErrors.qml
++++ b/gui/components/InitErrors.qml
+@@ -1,6 +1,6 @@
+ import QtQuick
+ import QtQuick.Controls
+-import QtQuick.Effects
++import Qt5Compat.GraphicalEffects
+ 
+ ErrorBox {
+ 
+diff --git a/gui/components/Locations.qml b/gui/components/Locations.qml
+index 2a188738..6228a58c 100644
+--- a/gui/components/Locations.qml
++++ b/gui/components/Locations.qml
+@@ -1,7 +1,7 @@
+ import QtQuick
+ import QtQuick.Controls
+ import QtQuick.Layouts
+-import QtQuick.Effects
++import Qt5Compat.GraphicalEffects
+ 
+ import "../themes/themes.js" as Theme
+ 
+@@ -81,11 +81,10 @@ ThemedPage {
+                         //verticalCenterOffset: 3
+                     }
+                 }
+-                MultiEffect {
++                ColorOverlay{
+                     anchors.fill: lightning
+                     source: lightning
+-                    colorizationColor: "black"
+-                    colorization: 1.0
++                    color: "black"
+                     antialiasing: true
+                 }
+             }
+diff --git a/gui/components/MotdBox.qml b/gui/components/MotdBox.qml
+index 0304119e..d21e0b9b 100644
+--- a/gui/components/MotdBox.qml
++++ b/gui/components/MotdBox.qml
+@@ -1,6 +1,6 @@
+ import QtQuick
+ import QtQuick.Controls
+-import QtQuick.Effects
++import Qt5Compat.GraphicalEffects
+ import "../themes/themes.js" as Theme
+ 
+ Item {
+diff --git a/gui/components/Preferences.qml b/gui/components/Preferences.qml
+index 7d26044e..ed4f2122 100644
+--- a/gui/components/Preferences.qml
++++ b/gui/components/Preferences.qml
+@@ -2,7 +2,7 @@ import QtQuick
+ import QtQuick.Controls
+ import QtQuick.Layouts
+ import QtQuick.Controls.Material
+-import QtQuick.Effects
++import Qt5Compat.GraphicalEffects
+ 
+ import "../themes/themes.js" as Theme
+ 
+diff --git a/gui/components/ProviderSelection.qml b/gui/components/ProviderSelection.qml
+index d44c1679..58962db3 100644
+--- a/gui/components/ProviderSelection.qml
++++ b/gui/components/ProviderSelection.qml
+@@ -1,5 +1,3 @@
+-pragma ComponentBehavior: Bound
+-
+ import QtQuick
+ import QtQuick.Controls
+ import QtQuick.Controls.Material
+diff --git a/gui/components/ProviderSetupComplete.qml b/gui/components/ProviderSetupComplete.qml
+index 110bd2f6..905e1603 100644
+--- a/gui/components/ProviderSetupComplete.qml
++++ b/gui/components/ProviderSetupComplete.qml
+@@ -1,5 +1,3 @@
+-pragma ComponentBehavior: Bound
+-
+ import QtQuick
+ import QtQuick.Controls
+ import QtQuick.Controls.Material
+diff --git a/gui/components/SelectCircumventionTechnique.qml b/gui/components/SelectCircumventionTechnique.qml
+index 2933ae5b..91697a0a 100644
+--- a/gui/components/SelectCircumventionTechnique.qml
++++ b/gui/components/SelectCircumventionTechnique.qml
+@@ -1,5 +1,3 @@
+-pragma ComponentBehavior: Bound
+-
+ import QtQuick
+ import QtQuick.Controls
+ import QtQuick.Controls.Material
+diff --git a/gui/components/SignalIcon.qml b/gui/components/SignalIcon.qml
+index 8747f054..38a23710 100644
+--- a/gui/components/SignalIcon.qml
++++ b/gui/components/SignalIcon.qml
+@@ -1,7 +1,7 @@
+ import QtQuick
+ import QtQuick.Controls
+ import QtQuick.Layouts
+-import QtQuick.Effects
++import Qt5Compat.GraphicalEffects
+ 
+ import "../themes/themes.js" as Theme
+ 
+@@ -41,11 +41,10 @@ Item {
+             ]
+         }
+     }
+-    MultiEffect {
++    ColorOverlay{
+         anchors.fill: icon
+         source: icon
+-        colorizationColor: getQualityColor()
+-        colorization: 1.0
++        color: getQualityColor()
+         antialiasing: true
+     }
+ 
+diff --git a/gui/components/Splash.qml b/gui/components/Splash.qml
+index bcf39ae2..38d00231 100644
+--- a/gui/components/Splash.qml
++++ b/gui/components/Splash.qml
+@@ -1,6 +1,6 @@
+ import QtQuick
+ import QtQuick.Controls
+-import QtQuick.Effects
++import Qt5Compat.GraphicalEffects
+ import "../themes/themes.js" as Theme
+ 
+ Page {
+diff --git a/gui/components/StatusBox.qml b/gui/components/StatusBox.qml
+index 94539405..2841887c 100644
+--- a/gui/components/StatusBox.qml
++++ b/gui/components/StatusBox.qml
+@@ -1,6 +1,6 @@
+ import QtQuick
+ import QtQuick.Controls
+-import QtQuick.Effects
++import Qt5Compat.GraphicalEffects
+ import QtQuick.Layouts
+ import QtQuick.Templates as T
+ import QtQuick.Controls.impl
+diff --git a/gui/components/SwitchProvider.qml b/gui/components/SwitchProvider.qml
+index 89eb6fd1..ca3a06f4 100644
+--- a/gui/components/SwitchProvider.qml
++++ b/gui/components/SwitchProvider.qml
+@@ -1,6 +1,6 @@
+ import QtQuick
+ import QtQuick.Controls
+-import QtQuick.Effects
++import Qt5Compat.GraphicalEffects
+ 
+ ThemedPage {
+     id: providerSetupPage
+@@ -84,15 +84,12 @@ ThemedPage {
+                 color: "pink"
+                 radius: 7
+             }
+-            MultiEffect {
++            DropShadow {
+                 source: backButtonBackground
+-                anchors.fill: backButtonBackground
+-                autoPaddingEnabled: true
+-                shadowEnabled: backButton.enabled
+-                shadowHorizontalOffset: 1
+-                shadowVerticalOffset: 1
+-                shadowColor: "gray"
+-                shadowBlur: 0.7
++                horizontalOffset: 3
++                verticalOffset: 3
++                radius: 8.0
++                color: "gray"
+                 opacity: backButton.pressed ? 0.75 : 1.0
+             }
+             enabled: stackView.depth > 1
+@@ -145,15 +142,12 @@ ThemedPage {
+                 color: "pink"
+                 radius: 7
+             }
+-            MultiEffect {
++            DropShadow {
+                 source: nextButtonBackground
+-                anchors.fill: nextButtonBackground
+-                autoPaddingEnabled: true
+-                shadowEnabled: nextButton.enabled
+-                shadowHorizontalOffset: 1
+-                shadowVerticalOffset: 1
+-                shadowBlur: 0.7
+-                shadowColor: "gray"
++                horizontalOffset: 3
++                verticalOffset: 3
++                radius: 8.0
++                color: "gray"
+                 opacity: nextButton.pressed ? 0.75 : 1.0
+             }
+             anchors {
+-- 
+2.55.0
+
