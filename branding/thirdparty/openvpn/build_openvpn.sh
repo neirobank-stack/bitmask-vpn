@@ -61,8 +61,9 @@ function build_zlib()
 	mkdir -p $SRC/zlib && cd $SRC/zlib
 
 	if [ ! -f $ZLIB.tar.gz ]; then
-	    $WGET https://zlib.net/$ZLIB.tar.gz
-	    $WGET https://zlib.net/$ZLIB.tar.gz.asc
+	    # zlib.net хранит только текущую версию; архив той же версии — релиз автора на GitHub (SHA-256 совпадает с zlib.net/fossils)
+	    $WGET https://github.com/madler/zlib/releases/download/v${ZLIB#zlib-}/$ZLIB.tar.gz
+	    $WGET https://github.com/madler/zlib/releases/download/v${ZLIB#zlib-}/$ZLIB.tar.gz.asc
 	fi
 	tar zxvf $ZLIB.tar.gz
 	cd $ZLIB
