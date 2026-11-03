@@ -16,7 +16,6 @@ jobs:
   build-mac:
     runs-on: macos-15-intel
     env:
-      PROVIDER: bitmask
       VERSION: 0.26.10-rc.1
     steps:
       - name: Checkout
@@ -61,7 +60,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG="bitmask-${VERSION}-${GITHUB_RUN_NUMBER}"
-          gh release create "$TAG" out/* --title "Bitmask ${VERSION} macOS x86_64 (unsigned) #${GITHUB_RUN_NUMBER}" --notes "Unsigned build of leapcode/bitmask-vpn 99585a3, PROVIDER=bitmask."
+          gh release create "$TAG" out/* --title "Bitmask ${VERSION} macOS x86_64 (unsigned) #${GITHUB_RUN_NUMBER}" --notes "Unsigned build of leapcode/bitmask-vpn 99585a3, provider coopvpn (CoopVPN Beta, app name Bitmask), CA = Coop beta Root CA."
       - name: Upload artifacts (fallback)
         if: always()
         uses: actions/upload-artifact@v4
